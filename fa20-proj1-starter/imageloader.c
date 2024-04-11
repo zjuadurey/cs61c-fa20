@@ -27,13 +27,23 @@ Image *readData(char *filename)
 {
 	//YOUR CODE HERE
 	Image *img = (Image*) malloc(sizeof(Image));
+		if (img == NULL) {
+		printf("a malloc fails\n.\n");
+		exit(-1);
+	}
 	char Type[10];
 	int color_stage;
 	FILE *fp = fopen(filename, "r");
 	fscanf(fp, "%s %u %u %d", Type, &img->cols, &img->rows, &color_stage);
-
+	if (fp == NULL) {
+		printf("fp fopen fails\n.\n");
+		exit(-1);
+	}
 	Color **image = (Color **) malloc(sizeof(Color*) * img->rows);
-
+	if (image == NULL) {
+		printf("image malloc fails\n.\n");
+		exit(-1);
+	}
 	for (int i = 0; i < img->rows; i ++) {
 		image[i] = (Color *)malloc(img->cols * sizeof(Color));
 		for (int j = 0; j < img->cols; j ++) {
