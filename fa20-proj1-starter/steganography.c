@@ -74,28 +74,7 @@ int main(int argc, char **argv)
 	}
 
 	//read the input file
-	Image *img = (Image*) malloc(sizeof(Image));
-	if (img == NULL) {
-		printf("a malloc fails\n.\n");
-		exit(-1);
-	}
-	char Type[10];
-	int color_stage;
-	FILE *fp = fopen(argv[1], "r");
-	fscanf(fp, "%s %u %u %d", Type, &img->cols, &img->rows, &color_stage);
-
-	Color **image = (Color **) malloc(sizeof(Color*) * img->rows);
-
-	for (int i = 0; i < img->rows; i ++) {
-		image[i] = (Color *)malloc(img->cols * sizeof(Color));
-		for (int j = 0; j < img->cols; j ++) {
-			fscanf(fp, "%hhu %hhu %hhu", &image[i][j].R, &image[i][j].G, &image[i][j].B);
-		}
-	}
-
-	img->image = image;
-
-	fclose(fp);
+	Image *img = readData(argv[1]);
 
 	//process the input file
 	Image *new_image = steganography(img);
