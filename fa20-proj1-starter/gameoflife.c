@@ -23,6 +23,68 @@
 Color *evaluateOneCell(Image *image, int row, int col, uint32_t rule)
 {
 	//YOUR CODE HERE
+	
+	//build the map_table
+    int mask = 1;
+
+    int map_table[19] = {0};
+
+    for (int i = 0; i < 18; i ++) {
+        map_table[i] = (rule & mask) != 0 ? 1 : 0;
+        mask *= 2;
+    }
+
+	//use directions to determine the color
+	Color *output = (Color *) malloc(sizeof(Color));
+
+	int max_row_index = image->rows - 1, max_col_index = image->cols - 1; //limit the range
+	int directions[8][2] = {
+        {-1, 0}, {-1, 1}, {0, 1}, {1, 1},
+        {1, 0}, {1, -1}, {0, -1}, {-1, -1}
+    };
+
+	//count the vaild neighbors
+	int count[3]; // count for R, G, B
+	int offset[3]; // differ the dead & alive state
+	for (int i = 0; i < 3; i ++) {
+		count[i] = 0;
+		offset[i] = 0;
+	}
+
+	if (image->image[row][col].R == 255) {
+		offset[0] = 9;
+	}
+
+	if (image->image[row][col].G == 255) {
+		offset[1] = 9;
+	}
+
+	if (image->image[row][col].B == 255) {
+		offset[2] = 9;
+	}
+
+	for (int i = 0; i < 8; i ++) {
+		int row_index = row + directions[i][0];
+		int col_index = col + directions[i][1];
+		//boundary checks & changes
+		if (row_index == max_row_index + 1) row_index = 0;
+		if (col_index == max_col_index + 1) col_index = 0;
+
+		if (row_index == -1) row_index = max_row_index;
+		if (col_index == -1) col_index = max_col_index;
+
+		if (image->image[row_index][col_index].R == 255) count[0] ++;
+		if (image->image[row_index][col_index].G == 255) count[1] ++;
+		if (image->image[row_index][col_index].B == 255) count[2] ++;
+	}
+
+	//process the color according to the count array & the map_table
+	//printf("count[0], offset[0] : %d %d\n", count[0], offset[0]);
+	//printf("map_table[count[0] + offset[0]]: %d\n", map_table[count[0] + offset[0]]);
+	output->R = map_table[count[0] + offset[0]] == 1 ? 255 : 0;
+	output->G = map_table[count[1] + offset[1]] == 1 ? 255 : 0;
+	output->B = map_table[count[2] + offset[2]] == 1 ? 255 : 0;
+	return output;
 }
 
 //The main body of Life; given an image and a rule, computes one iteration of the Game of Life.
@@ -30,6 +92,23 @@ Color *evaluateOneCell(Image *image, int row, int col, uint32_t rule)
 Image *life(Image *image, uint32_t rule)
 {
 	//YOUR CODE HERE
+	Image *output = (Image *) malloc(sizeof(Image));
+	Color **output_image = (Color **) malloc(sizeof(Color *) * image->rows);
+
+	for (int i = 0; i < image->rows; i ++ ) {
+		output_image[i] = (Color *) malloc(sizeof(Color) * image->cols);
+		for (int j = 0; j < image->cols; j ++) {
+			Color *tmp = evaluateOneCell(image, i, j, rule);
+			output_image[i][j] = *tmp;
+			free(tmp);
+		}
+	}
+
+	output->cols = image->cols;
+	output->rows = image->rows;
+	output->image = output_image;
+
+	return output;
 }
 
 /*
@@ -50,4 +129,54 @@ You may find it useful to copy the code from steganography.c, to start.
 int main(int argc, char **argv)
 {
 	//YOUR CODE HERE
+	if (argc != 3) {
+		printf("usage: %s filename rule\n",argv[0]);
+		printf("filename is an ASCII PPM file (type P3) with maximum value 255.\n");
+		printf("rule is a hex number beginning with 0x; Life is 0x1808.\n");
+		exit(-1);
+	}
+
+	//read the input file
+	Image *img = (Image*) malloc(sizeof(Image));
+	if (img == NULL) {
+		printf("a malloc fails\n.\n");
+		exit(-1);
+	}
+	char Type[10];
+	int color_stage;
+	FILE *fp = fopen(argv[1], "r");
+
+	if (fp == NULL) {
+		printf("fp fopen fails\n.\n");
+		exit(-1);
+	}
+
+	fscanf(fp, "%s %u %u %d", Type, &img->cols, &img->rows, &color_stage);
+
+	Color **image = (Color **) malloc(sizeof(Color*) * img->rows);
+	if (image == NULL) {
+		printf("image malloc fails\n.\n");
+		exit(-1);
+	}
+
+	for (int i = 0; i < img->rows; i ++) {
+		image[i] = (Color *)malloc(img->cols * sizeof(Color));
+		for (int j = 0; j < img->cols; j ++) {
+			fscanf(fp, "%hhu %hhu %hhu", &image[i][j].R, &image[i][j].G, &image[i][j].B);
+		}
+	}
+
+	img->image = image;
+
+	fclose(fp);
+
+	//process the input file
+	char *ptr;
+	Image *new_image = life(img, strtoul(argv[2], &ptr, 0));
+
+	writeData(new_image);
+
+	freeImage(img);
+	freeImage(new_image);
+	return 0;
 }
