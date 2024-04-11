@@ -51,15 +51,15 @@ Color *evaluateOneCell(Image *image, int row, int col, uint32_t rule)
 		offset[i] = 0;
 	}
 
-	if (image->image[row][col].R == 255) {
+	if (image->image[row][col].R != 0) {
 		offset[0] = 9;
 	}
 
-	if (image->image[row][col].G == 255) {
+	if (image->image[row][col].G != 0) {
 		offset[1] = 9;
 	}
 
-	if (image->image[row][col].B == 255) {
+	if (image->image[row][col].B != 0) {
 		offset[2] = 9;
 	}
 
@@ -73,17 +73,17 @@ Color *evaluateOneCell(Image *image, int row, int col, uint32_t rule)
 		if (row_index == -1) row_index = max_row_index;
 		if (col_index == -1) col_index = max_col_index;
 
-		if (image->image[row_index][col_index].R == 255) count[0] ++;
-		if (image->image[row_index][col_index].G == 255) count[1] ++;
-		if (image->image[row_index][col_index].B == 255) count[2] ++;
+		if (image->image[row_index][col_index].R != 0) count[0] ++;
+		if (image->image[row_index][col_index].G != 0) count[1] ++;
+		if (image->image[row_index][col_index].B != 0) count[2] ++;
 	}
 
 	//process the color according to the count array & the map_table
 	//printf("count[0], offset[0] : %d %d\n", count[0], offset[0]);
 	//printf("map_table[count[0] + offset[0]]: %d\n", map_table[count[0] + offset[0]]);
-	output->R = map_table[count[0] + offset[0]] == 1 ? 255 : 0;
-	output->G = map_table[count[1] + offset[1]] == 1 ? 255 : 0;
-	output->B = map_table[count[2] + offset[2]] == 1 ? 255 : 0;
+	output->R = map_table[count[0] + offset[0]] == 1 ? (uint8_t)((double)rand() / RAND_MAX * 255) : 0;
+	output->G = map_table[count[1] + offset[1]] == 1 ? (uint8_t)((double)rand() / RAND_MAX * 255) : 0;
+	output->B = map_table[count[2] + offset[2]] == 1 ? (uint8_t)((double)rand() / RAND_MAX * 255) : 0;
 	return output;
 }
 
