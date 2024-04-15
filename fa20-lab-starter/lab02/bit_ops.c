@@ -34,7 +34,7 @@ void flip_bit(unsigned * x,
               unsigned n) {
     // YOUR CODE HERE
     unsigned bit = get_bit(*x, n);
-    printf("bit: %u\n", bit);
+    //printf("bit: %u\n", bit);
     set_bit(x, n, (~bit) & 0b1);
 }
 
