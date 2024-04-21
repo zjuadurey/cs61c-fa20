@@ -1,6 +1,7 @@
 /* Include the system headers we need */
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 /* Include our header */
 #include "vector.h"
@@ -119,6 +120,9 @@ void vector_set(vector_t *v, size_t loc, int value) {
 
     if (loc >= v->size) {
         v->data = (int *) realloc(v->data, sizeof(int) * (loc + 1));
+        for (int i = v->size; i <= loc; i ++) {
+            v->data[i] = 0;
+        }
         v->size = loc + 1;
     }
 
